@@ -46,6 +46,8 @@ func main() {
 	for {
 		msg, err := reader.ReadMessage(context.Background())
 		if err != nil {
+			// when no new messages, error will get logged repeatedly with err = "EOF".
+			//    could enhance to exit more gracefully, or poll for new events.
 			log.Printf("Failed to read message: %v", err)
 			time.Sleep(2 * time.Second)
 			continue
