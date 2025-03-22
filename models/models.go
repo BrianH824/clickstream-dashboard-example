@@ -8,15 +8,14 @@ import (
 )
 
 type ClickStreamEvent struct {
-	Timestamp  time.Time `json:"timestamp"`
-	UserID     string    `json:"user_id"`
-	ArticleID  *string   `json:"article_id,omitempty"` // a pointer so this can be nil,
-	EventType  string    `json:"event_type"`           //		for events unrelated to an article
-	Category   string    `json:"category"`
-	DeviceType string    `json:"device_type"`
+	Timestamp       time.Time `json:"timestamp"`
+	UserID          string    `json:"user_id"`
+	ArticleID       *string   `json:"article_id,omitempty"` // a pointer so this can be nil,
+	ArticleCategory string    `json:"category"`
+	EventType       string    `json:"event_type"` //		for events unrelated to an article
+	DeviceType      string    `json:"device_type"`
 }
 
-var articleEventTypes = []string{"page_view", "article_share", "comment", "like"}
 var deviceTypes = []string{"mobile", "desktop", "tablet"}
 
 var userUUIDs []string
@@ -39,6 +38,7 @@ func selectUser() string {
 		return CreateUser()
 	}
 
+	// return an existing user
 	randomIndex := rand.Intn(len(userUUIDs))
 	return userUUIDs[randomIndex]
 }
@@ -46,33 +46,51 @@ func selectUser() string {
 func GenerateRandomEvent() ClickStreamEvent {
 	userID := selectUser()
 
-	// Check if this user has logged in
-	isLoggedIn := loggedInUsers[userID]
-	var eventType string
-	var articleID *string
+	var (
+		eventType string
+		articleID *string
+	)
 
-	if !isLoggedIn {
+	if !loggedInUsers[userID] {
 		loggedInUsers[userID] = true
 
 		return ClickStreamEvent{
 			Timestamp:  time.Now(),
 			UserID:     userID,
 			EventType:  "login",
-			Category:   "admin",
 			DeviceType: deviceTypes[rand.Intn(len(deviceTypes))],
 		}
+	} else {
+		eventType = randomWeightedEventType()
+		articleUUID := uuid.NewString()
+		articleID = &articleUUID
 	}
-
-	eventType = articleEventTypes[rand.Intn(len(articleEventTypes))]
-	articleUUID := uuid.NewString()
-	articleID = &articleUUID
 
 	return ClickStreamEvent{
-		Timestamp:  time.Now(),
-		UserID:     userID,
-		ArticleID:  articleID,
-		EventType:  eventType,
-		Category:   "news",
-		DeviceType: deviceTypes[rand.Intn(len(deviceTypes))],
+		Timestamp:       time.Now(),
+		UserID:          userID,
+		ArticleID:       articleID,
+		ArticleCategory: randomCategory(),
+		EventType:       eventType,
+		DeviceType:      deviceTypes[rand.Intn(len(deviceTypes))],
 	}
+}
+
+func randomWeightedEventType() string {
+	pick := rand.Intn(100)
+	switch {
+	case pick > 90:
+		return "article_share"
+	case pick > 80:
+		return "comment"
+	case pick > 50:
+		return "like"
+	default:
+		return "page view"
+	}
+}
+
+func randomCategory() string {
+	categories := []string{"sports", "politics", "tech", "health", "entertainment"}
+	return categories[rand.Intn(len(categories))]
 }
