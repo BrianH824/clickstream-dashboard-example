@@ -15,8 +15,8 @@ import (
 )
 
 func main() {
-	const topic = "clickstream_events"
 	const broker = "web-user-clickstream-brian-3077.g.aivencloud.com:26239"
+	const topic = "clickstream_events"
 
 	producer := createKafkaConnection(broker, topic)
 	defer producer.Close()
@@ -24,7 +24,7 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	populateInitialUsers()
-	emitEvents(producer, 100)
+	emitEvents(producer, 100000)
 }
 
 func createKafkaConnection(broker string, topic string) *kafka.Writer {
@@ -79,7 +79,9 @@ func emitEvents(producer *kafka.Writer, messageLimit int) {
 			log.Printf("Sent event: %s", jsonValue)
 		}
 
-		time.Sleep(5 * time.Second)
+		// minimum delay of one tenth of a second, and up to two seconds
+		randomizedDelay := rand.Intn(2000) + 101
+		time.Sleep(time.Duration(randomizedDelay) * time.Millisecond)
 	}
 }
 
