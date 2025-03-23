@@ -11,8 +11,8 @@ type ClickStreamEvent struct {
 	Timestamp       time.Time `json:"timestamp"`
 	UserID          string    `json:"user_id"`
 	ArticleID       *string   `json:"article_id,omitempty"` // a pointer so this can be nil,
-	ArticleCategory string    `json:"category"`
-	EventType       string    `json:"event_type"` //		for events unrelated to an article
+	ArticleCategory string    `json:"category"`             //		for events unrelated to an article
+	EventType       string    `json:"event_type"`
 	DeviceType      string    `json:"device_type"`
 }
 

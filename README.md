@@ -39,7 +39,7 @@ models/            # Event schema and event generation logic
     ```shell
     go run cmd/producer/main.go
     ```
-5. In another terminal
+5. In another terminal:
     ```shell
     go run cmd/consumer/main.go
     ```
